@@ -31,8 +31,7 @@ export class Timeline {
 			"user-agent": this.client.request.userAgent,
 			"x-line-channeltoken": this.timelineToken,
 			"accept-encoding": "gzip",
-			"x-line-global-config":
-				"discover.enable=true; follow.enable=true; reboot.phase=scenario",
+			"x-line-global-config": "discover.enable=true; follow.enable=true; reboot.phase=scenario",
 			"x-line-mid": this.client.profile!.mid,
 			"x-line-access": this.client.authToken,
 			"content-type": "application/json; charset=UTF-8",
@@ -498,4 +497,114 @@ export class Timeline {
 			},
 		).then((r) => r.json());
 	}
+
+	public async createAlbum(options: {
+		title: string;
+		homeId: string;
+	}): Promise<TimelineResponse> {
+		const { title, homeId } = { 
+			...options,
+		};
+		await this.initTimeline();
+		const headers = {
+			...this.timelineHeaders,
+			"x-lhm": "POST",
+		};
+		const data = {
+			title,
+			type: "image",
+		}
+		const params = new URLSearchParams({
+			homeId,
+			count: "1",
+			auto: "0",
+		});
+		return await this.client.fetch(
+			`https://${this.client.request.endpoint}/mh/album/v3/album.json?${params}`,
+			{
+				method: "POST",
+				headers,
+				body: JSON.stringify(data),
+			},
+		).then((r) => r.json());
+	}
+
+	public async deleteAlbum(options: {
+		albumId: string;
+		homeId: string;
+	}): Promise<TimelineResponse> {
+		const { albumId, homeId } = {
+			...options,
+		};
+		await this.initTimeline();
+		const headers = {
+			...this.timelineHeaders,
+			"x-lhm": "DELETE",
+		};
+		const params = new URLSearchParams({
+			homeId,
+		});
+		return await this.client.fetch(
+			`https://${this.client.request.endpoint}/mh/album/v3/album/${albumId}?${params}`,
+			{
+				method: "DELETE",
+				headers,
+			},
+		).then((r) => r.json());
+	}
+
+	public async getAlbums(options: {
+		homeId: string;
+	}): Promise<TimelineResponse> {
+		const { homeId } = {
+			...options,
+		};
+		await this.initTimeline();
+		const headers = {
+			...this.timelineHeaders,
+			"x-lhm": "GET",
+		};
+		const params = new URLSearchParams({
+			homeId,
+			type: "g",
+			sourceType: "TALKROOM",
+		});
+		return await this.client.fetch(
+			`https://${this.client.request.endpoint}/mh/album/v3/albums.json?${params}`,
+			{
+				headers,
+			},
+		).then((r) => r.json());
+	}
+
+	public async editAlbum(options: {
+		albumId: string;
+		title: string;
+		homeId: string;
+	}): Promise<TimelineResponse> {
+		const { albumId, title, homeId } = {
+			...options,
+		};
+		await this.initTimeline();
+		const headers = {
+			...this.timelineHeaders,
+			"x-lhm": "PUT",
+		};
+		const params = new URLSearchParams({
+			homeId,
+		});
+		const data = {
+			title: title,
+		}
+		return await this.client.fetch(
+			`https://${this.client.request.endpoint}/mh/album/v3/album/${albumId}?${params}`,
+			{
+				method: "PUT",
+				headers,
+				body: JSON.stringify(data),
+			},
+		).then((r) => r.json());
+	}
+
+	// TODO: Implement uploadImageToAlbum and downloadImageFromAlbum
 }
